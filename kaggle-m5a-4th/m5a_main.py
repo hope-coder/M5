@@ -289,7 +289,9 @@ class M5aMain(object):
 
         start_time = time.time()
         self.log.info('create lags')
-
+        # 生成延后列，通过shift函数生成当天之后几天的数据
+        # 最外层是assign函数，输入是列名和内容的字典
+        # 字典是使用迭代的方式生成字典（双层循环），生成的内容就是没天销售值的延后数据
         grid_df = grid_df.assign(**{
             '{}_lag_{}'.format(col, l): grid_df.groupby(['id'])[col].transform(lambda x: x.shift(l))
             for l in self.params.num_lag_day_list
@@ -303,6 +305,7 @@ class M5aMain(object):
         start_time = time.time()
         self.log.info('create rolling aggs')
 
+        # 计算滚动平均值以及滚动标准差
         for num_rolling_day in self.params.num_rolling_day_list:
             self.log.info('rolling period', num_rolling_day)
             grid_df['rolling_mean_' + str(num_rolling_day)] = grid_df.groupby(['id'])[self.params.target].transform(
